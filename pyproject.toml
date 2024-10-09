@@ -1,0 +1,18 @@
+[project]
+name = "OpenHRV"
+version = "1.0.0"
+dependencies = ["PySide6 == 6.7.0"]
+
+[project.optional-dependencies]
+dev = ["snakeviz"]
+build = ["pyinstaller"]
+
+[tool.black] # https://lyz-code.github.io/blue-book/devops/black/
+extend-exclude = "openhrv/resources.py"
+
+[tool.mypy]
+check_untyped_defs = true
+
+[project.gui-scripts]
+# command line entry points
+openhrv = "openhrv.app:main"

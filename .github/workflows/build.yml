@@ -1,0 +1,50 @@
+name: build
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+          python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[build]
+
+    - name: release build
+      if: github.event_name == 'release'
+      run: |
+        pyinstaller --onefile --icon=docs/logo.ico --name=OpenHRV.bin openhrv/app.py --windowed
+
+    - name: manual build
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        pyinstaller --onefile --icon=docs/logo.ico --name=OpenHRV.bin openhrv/app.py
+
+    - name: upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OpenHRV
+        path: dist/OpenHRV.bin
+
+    - name: upload build artifact to release
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    # token generated implicitly
+      # See https://cli.github.com/manual/gh_release_upload.
+      run: |
+        gh release upload ${{ github.ref_name }} dist/OpenHRV.bin
